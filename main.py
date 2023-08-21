@@ -28,4 +28,3 @@ db.create_tables([Person, Leave])
 
 print(Person.select()[:])
 print(Leave.select()[:])
-
