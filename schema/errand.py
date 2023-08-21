@@ -2,7 +2,7 @@ from peewee import AutoField, DateField, CharField, ForeignKeyField, TextField
 from .base_model import BaseModel
 from .person import Person
 
-class errand(BaseModel):
+class Errand(BaseModel):
     errand_id = AutoField()
     military_number = ForeignKeyField(Person) #todo: back ref
     from_date = DateField()
