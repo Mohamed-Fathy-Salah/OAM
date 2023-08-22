@@ -10,6 +10,7 @@ class Person(BaseModel):
     demobilization_date = DateField()
     phone_number = CharField()
     national_id = CharField()
+    state = CharField() # present, absent, errand
 
     def __str__(self):
         return f"{self.military_number}\t{self.rank}\t{self.name}\t{self.residence}\t{self.brigade}\t{self.demobilization_date}\t{self.phone_number}\t{self.national_id}\t"

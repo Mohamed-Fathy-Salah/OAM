@@ -1,6 +1,14 @@
 from datetime import date
 from schema.person import Person
 from schema.leave import Leave
+from schema.base_model import db
+
+# constants
+PRESENT = 'present'
+LEAVE = 'leave'
+ERRAND = 'errand'
+
+DEFAULT_RETURNING_DAY = date(year= 1900, month= 1, day= 1)
 
 # person
 def add(
@@ -22,7 +30,8 @@ def add(
             brigade= brigade,
             demobilization_date= demobilization_date,
             phone_number= phone_number,
-            national_id= national_id
+            national_id= national_id,
+            state= PRESENT
             )
     except :
         print(f"{rank}/{name} not added")
@@ -54,15 +63,25 @@ def leave_off(
         travel_form_1: str,
         travel_form_2: str
         ):
-    try:
-        Leave.create(
-            military_number= military_number,
-            from_date= from_date,
-            to_date= to_date,
-            return_date= date(year= 1900, month= 1, day= 1),
-            travel_form_1= travel_form_1,
-            travel_form_2= travel_form_2
-                )
-    except:
-        print(f"{military_number} leave is not added")
+    with db.atomic() as txn:
+        try:
+            Leave.create(
+                military_number= military_number,
+                from_date= from_date,
+                to_date= to_date,
+                return_date= DEFAULT_RETURNING_DAY,
+                travel_form_1= travel_form_1,
+                travel_form_2= travel_form_2
+                    )
+            Person.update(state= LEAVE).where(Person.military_number == military_number)
+            txn.commit()
+        except:
+            txn.rollback()
+            print(f"{military_number} leave is not added")
 
+
+# def return_to_base(
+        # military_number: str,
+        # day: date
+        # ):
+    
