@@ -11,7 +11,7 @@ db.connect()
 db.create_tables([Person, Leave, Errand, Penalty, Support])
 
 military_number= '1334123131223'
-functions.add(
+functions.add_person(
     military_number= military_number,
     name= 'مصطفي ياسر جلال',
     rank= 'جندي',
