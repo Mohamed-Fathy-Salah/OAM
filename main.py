@@ -10,22 +10,9 @@ import functions
 db.connect()
 db.create_tables([Person, Leave, Errand, Penalty, Support])
 
-# Leave.create(
-    # military_number = "1234123131223",
-    # from_date = date(year= 2024, month= 2, day= 1),
-    # to_date = date(year= 2024, month= 2, day= 9),
-    # travel_form_1 = "12312312",
-    # travel_form_2 = "12312321"
-    # )
-# Support.create(
-    # military_number = "1234123131223",
-    # date_of_annexation = date(year=2024, month=1, day= 20),
-    # detachment = "ك785"
-        # )
-
-
+military_number= '1334123131223'
 functions.add(
-    military_number= '1334123131223',
+    military_number= military_number,
     name= 'مصطفي ياسر جلال',
     rank= 'جندي',
     residence= 'القاهره',
@@ -35,22 +22,14 @@ functions.add(
     national_id= '123412345698034'
 )
 
+functions.leave_off(
+        military_number= military_number,
+        from_date= date(year=2023, month=8, day=20),
+        to_date= date(year=2023, month=8, day=29),
+        travel_form_1= '12312312',
+        travel_form_2= '12312313'
+)
 
 print(Person.select()[:])
-
-functions.update(
-        old_rank= 'ملازم',
-        old_name= 'محمد فتحي صلاح', 
-        military_number= '1334123131223',
-        new_rank= 'لواء',
-        new_name= 'محمد فتحي صلاح', 
-        residence= 'اسكندريه',
-        brigade= 'ت.أ',
-        demobilization_date= date(year= 2024, month= 3, day= 1),
-        phone_number= '01111234567',
-        national_id= '123412345698034'
-                 )
-
-print(Person.select()[:])
-# print(Leave.select()[:])
+print(Leave.select()[:])
 # print(Support.select()[:])

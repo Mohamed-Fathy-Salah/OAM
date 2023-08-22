@@ -7,6 +7,7 @@ class Leave(BaseModel):
     military_number = ForeignKeyField(Person) #todo: back ref
     from_date = DateField()
     to_date = DateField()
+    return_date = DateField()
     travel_form_1 = CharField()
     travel_form_2 = CharField()
 
