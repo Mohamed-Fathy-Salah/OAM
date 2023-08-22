@@ -10,6 +10,7 @@ class Leave(BaseModel):
     return_date = DateField()
     travel_form_1 = CharField()
     travel_form_2 = CharField()
+    leave_type = CharField()
 
     def __str__(self):
         return f"{self.leave_id}\t{self.military_number}\t{self.from_date}\t{self.to_date}\t{self.travel_form_1}\t{self.travel_form_2}\t"
