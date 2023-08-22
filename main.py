@@ -5,21 +5,11 @@ from schema.leave import Leave
 from schema.support import Support
 from schema.errand import Errand
 from schema.penalty import Penalty
-
+import functions
 
 db.connect()
 db.create_tables([Person, Leave, Errand, Penalty, Support])
 
-# Person.create(
-        # military_number= '1234123131223',
-        # name= 'محمد فتحي صلاح',
-        # rank= 'جندي',
-        # residence= 'القاهره',
-        # brigade= 'ت.أ',
-        # demobilization_date= date(year= 2024, month= 3, day= 1),
-        # phone_number= '01111234567',
-        # national_id= '123412345698034'
-        # )
 # Leave.create(
     # military_number = "1234123131223",
     # from_date = date(year= 2024, month= 2, day= 1),
@@ -33,6 +23,34 @@ db.create_tables([Person, Leave, Errand, Penalty, Support])
     # detachment = "ك785"
         # )
 
+
+functions.add(
+    military_number= '1334123131223',
+    name= 'مصطفي ياسر جلال',
+    rank= 'جندي',
+    residence= 'القاهره',
+    brigade= 'ت.أ',
+    demobilization_date= date(year= 2024, month= 3, day= 1),
+    phone_number= '01111234567',
+    national_id= '123412345698034'
+)
+
+
 print(Person.select()[:])
-print(Leave.select()[:])
-print(Support.select()[:])
+
+functions.update(
+        old_rank= 'ملازم',
+        old_name= 'محمد فتحي صلاح', 
+        military_number= '1334123131223',
+        new_rank= 'لواء',
+        new_name= 'محمد فتحي صلاح', 
+        residence= 'اسكندريه',
+        brigade= 'ت.أ',
+        demobilization_date= date(year= 2024, month= 3, day= 1),
+        phone_number= '01111234567',
+        national_id= '123412345698034'
+                 )
+
+print(Person.select()[:])
+# print(Leave.select()[:])
+# print(Support.select()[:])

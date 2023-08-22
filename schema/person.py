@@ -3,8 +3,8 @@ from .base_model import BaseModel
 
 class Person(BaseModel):
     military_number = FixedCharField(primary_key= True)
-    rank = TextField() 
-    name = CharField()
+    rank = TextField() # todo: make index with name
+    name = CharField() 
     residence = CharField()
     brigade = CharField()
     demobilization_date = DateField()
