@@ -5,4 +5,4 @@ residence = { 'القاهرة', 'الإسكندرية', 'الجيزة', 'الش�
 # سرية
 brigade = {}
 
-state = {'present', 'absent', 'errand'}
+state = {'present', 'leave', 'absent', 'errand'}

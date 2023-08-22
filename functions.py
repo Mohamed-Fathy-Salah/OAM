@@ -35,7 +35,8 @@ def add_person(
             demobilization_date= demobilization_date,
             phone_number= phone_number,
             national_id= national_id,
-            state= PRESENT
+            state= PRESENT,
+            return_date= date.today()
             )
     except :
         print(f"{rank}/{name} not added")
@@ -56,8 +57,18 @@ def update_person(
         phone_number: str,
         national_id: str
         ):
-        count = Person.update(name= name, rank = rank, residence= residence, brigade= brigade, demobilization_date= demobilization_date, phone_number= phone_number, national_id= national_id).where(Person.military_number == military_number).execute()
-        print(f"{count} rows updated")
+    try:
+        person = Person.get_by_id(military_number)
+        person.name = name
+        person.rank = rank,
+        person.residence= residence,
+        person.brigade= brigade,
+        person.demobilization_date= demobilization_date,
+        person.phone_number= phone_number,
+        person.national_id= national_id
+        person.save()
+    except:
+        print(f"{military_number} is not updated")
 
 # leave & errand
 def leave_off(
@@ -79,18 +90,31 @@ def leave_off(
                 travel_form_2= travel_form_2,
                 leave_type= leave_type
                     )
-            Person.update(state= LEAVE).where(Person.military_number == military_number)
+            person = Person.get_by_id(military_number)
+            person.state= LEAVE
+            person.save()
             txn.commit()
         except:
             txn.rollback()
             print(f"{military_number} leave is not added")
 
-# def edit_leave(
-        # military_number: str,
-        # new_return_date: date
-        # ):
+def get_leaves(military_number: str):
+    return Leave.select().where(Leave.military_number == military_number)
+
+def get_all_leaves():
+    return Leave.select().dicts()
+
+def edit_leave(
+        military_number: str,
+        new_return_date: date
+        ):
     # check state
+    person = Person.get_by_id(military_number)
     # if state = LEAVE then update person.return_date = new_return_date & leave.return_date = new_return_date
+    if person.state == LEAVE :
+        with db.atomic() as txn:
+            # leave = 
+            person.return_date = new_return_date
 
 # def carry_out_errand(
         # military_number: str,

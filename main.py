@@ -22,14 +22,23 @@ functions.add_person(
     national_id= '123412345698034'
 )
 
-functions.leave_off(
-        military_number= military_number,
-        from_date= date(year=2023, month=8, day=20),
-        to_date= date(year=2023, month=8, day=29),
-        travel_form_1= '12312312',
-        travel_form_2= '12312313'
-)
+# functions.leave_off(
+        # military_number= military_number,
+        # from_date= date(year=2023, month=8, day=20),
+        # to_date= date(year=2023, month=8, day=29),
+        # travel_form_1= '12312312',
+        # travel_form_2= '12312313'
+# )
 
-print(Person.select()[:])
-print(Leave.select()[:])
-# print(Support.select()[:])
+# print(Person.select()[:])
+for i in range(1, 4):
+    functions.leave_off(military_number,
+                        from_date= date(year=2023, month=3, day=10*i- 5),
+                        to_date= date(year= 2023, month= 3, day= 10 * i ),
+                        travel_form_1= '12312311',
+                        travel_form_2= '12312313')
+
+# functions.edit_leave(military_number, new_return_date= date(year=2023, month= 3, day= 11))
+
+# print(Person.select()[:])
+print(functions.get_leaves(military_number))
