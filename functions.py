@@ -64,11 +64,11 @@ def update_person(
         person = Person.get_by_id(military_number)
 
         person.name = name
-        person.rank = rank,
-        person.residence= residence,
-        person.brigade= brigade,
-        person.demobilization_date= demobilization_date,
-        person.phone_number= phone_number,
+        person.rank = rank
+        person.residence= residence
+        person.brigade= brigade
+        person.demobilization_date= demobilization_date
+        person.phone_number= phone_number
         person.national_id= national_id
         person.state= state
         person.return_date= return_date
@@ -226,6 +226,12 @@ def add_penalty(
 
 def get_people():
     return Person.select().dicts()[:]
+
+def get_person(military_number: str):
+    try:
+        return Person.get_by_id(military_number)
+    except:
+        return None
 
 # filter peaople by one or more filters
 # def filter_peaople(
