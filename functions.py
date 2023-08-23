@@ -55,10 +55,13 @@ def update_person(
         brigade: str,
         demobilization_date: date,
         phone_number: str,
-        national_id: str
+        national_id: str,
+        state: str,
+        return_date: date
         ):
     try:
         person = Person.get_by_id(military_number)
+
         person.name = name
         person.rank = rank,
         person.residence= residence,
@@ -66,6 +69,9 @@ def update_person(
         person.demobilization_date= demobilization_date,
         person.phone_number= phone_number,
         person.national_id= national_id
+        person.state= state
+        person.return_date= return_date
+
         person.save()
     except:
         print(f"{military_number} is not updated")
@@ -99,32 +105,46 @@ def leave_off(
             print(f"{military_number} leave is not added")
 
 def get_leaves(military_number: str):
-    return Leave.select().where(Leave.military_number == military_number)
+    leave = Leave.select().where(Leave.military_number == military_number)
+    return leave.dicts()[:]
 
 def get_all_leaves():
     return Leave.select().dicts()
 
-def edit_leave(
+def update_leave(
+        leave_id: int,
         military_number: str,
-        new_return_date: date
+        from_date: date,
+        to_date: date,
+        return_date: date,
+        travel_form_1: str,
+        travel_form_2: str,
+        leave_type: str
         ):
-    # check state
-    person = Person.get_by_id(military_number)
-    # if state = LEAVE then update person.return_date = new_return_date & leave.return_date = new_return_date
-    if person.state == LEAVE :
-        with db.atomic() as txn:
-            # leave = 
-            person.return_date = new_return_date
+    try:
+        leave = Leave.get_by_id(leave_id)
 
-# def carry_out_errand(
-        # military_number: str,
-        # from_date: date,
-        # to_date: date,
-        # travel_form_1: str,
-        # travel_form_2: str,
-        # place: str,
-        # reason: str
-        # ):
+        leave.military_number = military_number
+        leave.from_date= from_date,
+        leave.to_date= to_date,
+        leave.return_date= return_date,
+        leave.travel_form_1= travel_form_1,
+        leave.travel_form_2= travel_form_2,
+        leave.leave_type= leave_type
+
+        leave.save()
+    except:
+        print(f"leave {leave_id} is not updated")
+
+def carry_out_errand(
+        military_number: str,
+        from_date: date,
+        to_date: date,
+        travel_form_1: str,
+        travel_form_2: str,
+        place: str,
+        reason: str
+        ):
     # update person.state = ERRAND 
     # create new errand
 
