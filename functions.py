@@ -105,16 +105,20 @@ def create_leave(
             txn.rollback()
             print(f"{military_number} leave is not added")
 
+def get_leave(leave_id: int):
+    try:
+        return Leave.get_by_id(leave_id)
+    except:
+        return None
+
 def get_leaves(military_number: str):
-    leave = Leave.select().where(Leave.military_number == military_number)
-    return leave.dicts()[:]
+    return Leave.select().where(Leave.military_number == military_number)[:]
 
 def get_all_leaves():
-    return Leave.select().dicts()
+    return Leave.select()[:]
 
 def update_leave(
         leave_id: int,
-        military_number: str,
         from_date: date,
         to_date: date,
         return_date: date,
@@ -122,20 +126,38 @@ def update_leave(
         travel_form_2: str,
         leave_type: str
         ):
-    try:
-        leave = Leave.get_by_id(leave_id)
+    with db.atomic() as txn:
+        try:
+            leave = Leave.get_by_id(leave_id)
 
-        leave.military_number = military_number
-        leave.from_date= from_date,
-        leave.to_date= to_date,
-        leave.return_date= return_date,
-        leave.travel_form_1= travel_form_1,
-        leave.travel_form_2= travel_form_2,
-        leave.leave_type= leave_type
+            leave.from_date= from_date
+            leave.to_date= to_date
+            leave.return_date= return_date
+            leave.travel_form_1= travel_form_1
+            leave.travel_form_2= travel_form_2
+            leave.leave_type= leave_type
+            leave.save()
 
-        leave.save()
-    except:
-        print(f"leave {leave_id} is not updated")
+            # todo: if last leave update person return_date
+            if return_date <= date.today():
+                person = Person.get_by_id(leave.military_number)
+                person.state = PRESENT
+                person.save()
+            txn.commit()
+        except:
+            print(f"leave {leave_id} is not updated")
+            txn.rollback()
+
+def remove_leave(leave_id: int, military_number: str):
+    with db.atomic() as txn:
+        try:
+            Leave.delete_by_id(leave_id)
+            # todo: check if last leave return_date is set or not
+            person = Person.get_by_id(military_number)
+            person.state = PRESENT
+            txn.commit()
+        except:
+            txn.rollback()
 
 def create_errand(
         military_number: str,
