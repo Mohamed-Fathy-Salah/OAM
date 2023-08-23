@@ -1,10 +1,9 @@
-from logging import log
 import sys
-from datetime import date
-from peewee import SqliteDatabase
-
 sys.path.append("..")
 from functions import *
+
+from datetime import date
+from peewee import SqliteDatabase
 from schema.person import Person
 from schema.leave import Leave
 from schema.support import Support
