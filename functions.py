@@ -2,6 +2,7 @@ from datetime import date
 from schema.person import Person
 from schema.leave import Leave
 from schema.support import Support
+from schema.errand import Errand
 from schema.penalty import Penalty
 from schema.base_model import db
 
@@ -15,7 +16,7 @@ DETENTION = 'DETENTION'
 DEFAULT_RETURNING_DAY = date(year= 1900, month= 1, day= 1)
 
 # person
-def add_person(
+def create_person(
         military_number: str,
         rank: str,
         name: str,
@@ -77,7 +78,7 @@ def update_person(
         print(f"{military_number} is not updated")
 
 # leave & errand
-def leave_off(
+def create_leave(
         military_number: str,
         from_date: date,
         to_date: date,
@@ -136,7 +137,7 @@ def update_leave(
     except:
         print(f"leave {leave_id} is not updated")
 
-def carry_out_errand(
+def create_errand(
         military_number: str,
         from_date: date,
         to_date: date,
@@ -145,8 +146,26 @@ def carry_out_errand(
         place: str,
         reason: str
         ):
-    # update person.state = ERRAND 
-    # create new errand
+    with db.atomic() as txn:
+        try:
+            Errand.create(
+                military_number = military_number,
+                from_date = from_date,
+                to_date = to_date,
+                travel_form_1 = travel_form_1,
+                travel_form_2 = travel_form_2,
+                place = place,
+                reason = reason
+                )
+
+            person = Person.get_by_id(military_number)
+            person.state = ERRAND
+            person.save()
+
+            txn.commit()
+        except:
+            print(f"{military_number} errand is not created")
+            txn.rollback()
 
 # def return_to_base(
         # military_number: str,
@@ -205,8 +224,8 @@ def add_penalty(
 # def get_absent():
     # get all person with state = LEAVE & return_date > today
 
-# def get_all():
-    # return Person.get()
+def get_people():
+    return Person.select().dicts()[:]
 
 # filter peaople by one or more filters
 # def filter_peaople(
