@@ -1,4 +1,5 @@
 from datetime import date
+from logging import exception
 from schema.person import Person
 from schema.leave import Leave
 from schema.support import Support
@@ -108,15 +109,15 @@ def create_leave(
 
 def get_leave(leave_id: int):
     try:
-        return Leave.get_by_id(leave_id)
+        return Leave.select().where(Leave.leave_id == leave_id).dicts()[0]
     except:
-        return None
+        return {}
 
 def get_leaves(military_number: str):
-    return Leave.select().where(Leave.military_number == military_number)[:]
+    return Leave.select().where(Leave.military_number == military_number).dicts()[:]
 
 def get_all_leaves():
-    return Leave.select()[:]
+    return Leave.select().dicts()[:]
 
 def update_leave(
         leave_id: int,
@@ -239,15 +240,15 @@ def remove_errand(errand_id: int, military_number: str):
 
 def get_errand(errand_id: int):
     try:
-        return Errand.get_by_id(errand_id)
+        return Errand.select().where(Errand.errand_id == errand_id).dicts()[0]
     except:
-        return None
+        return {}
 
 def get_errands(military_number: str):
-    return Errand.select().where(Errand.military_number == military_number)[:]
+    return Errand.select().where(Errand.military_number == military_number).dicts()[:]
 
 def get_all_errands():
-    return Errand.select()[:]
+    return Errand.select().dicts()[:]
 
 def return_to_base(
         military_number: str,
@@ -353,11 +354,18 @@ def update_support(
             txn.rollback()
             print(f"support {rank}/{name} not updated")
 
-# def remove_support(
-        # military_number: str
-        # ):
-    # remove person
-    # remove support
+def remove_support(
+        military_number: str
+        ):
+    # todo: make delete cascade
+    with db.atomic() as txn:
+        try:
+            Support.delete_by_id(military_number)
+            Person.delete_by_id(military_number)
+            txn.commit()
+        except:
+            txn.rollback()
+            print(f"{military_number} is not removed")
 
 
 def create_penalty(
@@ -376,32 +384,63 @@ def create_penalty(
     except:
         print(f"{military_number} penalty is not added")
     
-# def get_prisoners():
 
-# def get_detained():
+def update_penalty(
+        penalty_id: int,
+        from_date: date,
+        to_date: date,
+        penalty_type: str
+        ):
+    try:
+        penalty = Penalty.get_by_id(penalty_id)
+        penalty.from_date= from_date
+        penalty.to_date= to_date
+        penalty.penalty_type= penalty_type
+        penalty.save()
+    except:
+        print(f"penalty {penalty_id} is not updated")
 
-# def get_sick_leave():
+def get_penalty(penalty_id: int):
+    try:
+        return Penalty.select().where(Penalty.penalty_id == penalty_id).dicts()[0]
+    except:
+        return {}
+
+def get_penalties():
+    return Penalty.select().dicts()[:]
+
+def get_prisoners():
+    return Penalty.select().where(Penalty.to_date >= date.today() and Penalty.penalty_type == PRISON).dicts()[:]
+
+def get_detained():
+    return Penalty.select().where(Penalty.to_date >= date.today() and Penalty.penalty_type == DETENTION).dicts()[:]
+
+# def get_present():
+    # get all person with state = LEAVE & return_date > today
+
+def get_absent():
+    return Leave.select().where(Leave.to_date < date.today and Leave.return_date == DEFAULT_RETURNING_DAY).dicts()[:]
+
+def get_sick_leave():
+    return Leave.select().where(Leave.to_date >= date.today() and Leave.leave_type == SICK).dicts()[:]
 
 def get_support(military_number: str):
     try:
         return Support.select(Support, Person).join(Person).where(Person.military_number == military_number).dicts()[0]
     except:
-        return None
+        return {}
 
 def get_all_support():
     return Support.select().dicts()[:]
-
-# def get_absent():
-    # get all person with state = LEAVE & return_date > today
 
 def get_people():
     return Person.select().dicts()[:]
 
 def get_person(military_number: str):
     try:
-        return Person.get_by_id(military_number)
+        return Person.select().where(Person.military_number == military_number).dicts()[0]
     except:
-        return None
+        return {}
 
 # filter peaople by one or more filters
 # def filter_peaople(
