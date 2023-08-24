@@ -5,6 +5,7 @@ from schema.support import Support
 from schema.errand import Errand
 from schema.penalty import Penalty
 from schema.base_model import db
+from peewee import JOIN
 
 # constants
 PRESENT = 'present'
@@ -155,6 +156,7 @@ def remove_leave(leave_id: int, military_number: str):
             # todo: check if last leave return_date is set or not
             person = Person.get_by_id(military_number)
             person.state = PRESENT
+            person.save()
             txn.commit()
         except:
             txn.rollback()
@@ -174,6 +176,7 @@ def create_errand(
                 military_number = military_number,
                 from_date = from_date,
                 to_date = to_date,
+                return_date = DEFAULT_RETURNING_DAY,
                 travel_form_1 = travel_form_1,
                 travel_form_2 = travel_form_2,
                 place = place,
@@ -189,30 +192,166 @@ def create_errand(
             print(f"{military_number} errand is not created")
             txn.rollback()
 
-# def return_to_base(
-        # military_number: str,
-        # day: date
-        # ):
-    # check state
-    # if state = LEAVE then update person.return_date = day & leave.return_date = day
-    # if state = ERRAND then update errand.to_date = day
-    # update person.state = PRESENT
+def update_errand(
+        errand_id: int,
+        from_date: date,
+        to_date: date,
+        return_date: date,
+        travel_form_1: str,
+        travel_form_2: str,
+        place: str,
+        reason: str,
+        ):
+    with db.atomic() as txn:
+        try:
+            errand = Errand.get_by_id(errand_id)
+
+            errand.from_date= from_date
+            errand.to_date= to_date
+            errand.return_date= return_date
+            errand.travel_form_1= travel_form_1
+            errand.travel_form_2= travel_form_2
+            errand.place= place
+            errand.reason= reason
+            errand.save()
+
+            # todo: if last leave update person return_date
+            if return_date <= date.today():
+                person = Person.get_by_id(errand.military_number)
+                person.state = PRESENT
+                person.save()
+            txn.commit()
+        except:
+            print(f"errand {errand_id} is not updated")
+            txn.rollback()
+
+def remove_errand(errand_id: int, military_number: str):
+    with db.atomic() as txn:
+        try:
+            Errand.delete_by_id(errand_id)
+            # todo: check if last leave return_date is set or not
+            person = Person.get_by_id(military_number)
+            person.state = PRESENT
+            person.save()
+            txn.commit()
+        except:
+            txn.rollback()
+
+def get_errand(errand_id: int):
+    try:
+        return Errand.get_by_id(errand_id)
+    except:
+        return None
+
+def get_errands(military_number: str):
+    return Errand.select().where(Errand.military_number == military_number)[:]
+
+def get_all_errands():
+    return Errand.select()[:]
+
+def return_to_base(
+        military_number: str,
+        day: date
+        ):
+    with db.atomic() as txn:
+        try:
+            person = Person.get_by_id(military_number)
+
+            if person.state == LEAVE:
+                person.return_date = day
+                leave = Leave.get(fn.MAX(Leave.from_date))
+                leave.return_date = day
+                leave.save()
+            elif person.state == ERRAND:
+                errand = Errand.get(fn.MAX(Errand.from_date))
+                errand.return_date = day
+                errand.save()
+
+            person.state = PRESENT
+
+            person.save()
+
+            txn.commit()
+        except:
+            txn.rollback()
 
 # support
-# def add_support(
-        # military_number: str,
-        # rank: str,
-        # name: str,
-        # residence: str,
-        # brigade: str,
-        # demobilization_date: date,
-        # phone_number: str,
-        # national_id: str,
-        # detachment: str,
-        # date_of_annexation: date
-        # ):
-    # create person
-    # create support
+def create_support(
+        military_number: str,
+        rank: str,
+        name: str,
+        residence: str,
+        brigade: str,
+        demobilization_date: date,
+        phone_number: str,
+        national_id: str,
+        detachment: str,
+        annexation_date: date
+        ):
+    with db.atomic() as txn:
+        try:
+            Person.create(
+                military_number= military_number,
+                rank= rank,
+                name= name,
+                residence= residence,
+                brigade= brigade,
+                demobilization_date= demobilization_date,
+                phone_number= phone_number,
+                national_id= national_id,
+                state= PRESENT,
+                return_date= date.today()
+                )
+
+            Support.create(
+                    military_number= military_number,
+                    annexation_date= annexation_date,
+                    detachment= detachment
+                    )
+
+            txn.commit()
+        except :
+            txn.rollback()
+            print(f"{rank}/{name} not added")
+
+def update_support(
+        military_number: str,
+        rank: str,
+        name: str,
+        residence: str,
+        brigade: str,
+        demobilization_date: date,
+        phone_number: str,
+        national_id: str,
+        state: str,
+        return_date: date,
+        detachment: str,
+        annexation_date: date
+        ):
+
+    with db.atomic() as txn:
+        try:
+            support = Support.get_by_id(military_number)
+            support.detachment= detachment
+            support.annexation_date= annexation_date
+
+            person = Person.get_by_id(military_number)
+            person.rank= rank
+            person.name= name
+            person.residence= residence
+            person.brigade= brigade
+            person.demobilization_date= demobilization_date
+            person.phone_number= phone_number
+            person.national_id= national_id
+            person.state= state
+            person.return_date= return_date
+
+            support.save()
+            person.save()
+            txn.commit()
+        except:
+            txn.rollback()
+            print(f"support {rank}/{name} not updated")
 
 # def remove_support(
         # military_number: str
@@ -221,7 +360,7 @@ def create_errand(
     # remove support
 
 
-def add_penalty(
+def create_penalty(
         military_number: str,
         from_date: date,
         to_date: date,
@@ -242,6 +381,15 @@ def add_penalty(
 # def get_detained():
 
 # def get_sick_leave():
+
+def get_support(military_number: str):
+    try:
+        return Support.select(Support, Person).join(Person).where(Person.military_number == military_number).dicts()[0]
+    except:
+        return None
+
+def get_all_support():
+    return Support.select().dicts()[:]
 
 # def get_absent():
     # get all person with state = LEAVE & return_date > today
