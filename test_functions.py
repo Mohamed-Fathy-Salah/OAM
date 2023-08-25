@@ -1,4 +1,6 @@
-from functions import *
+from mutations import *
+from queries import *
+from constants import *
 
 from datetime import date, timedelta
 from peewee import SqliteDatabase
@@ -329,7 +331,6 @@ def test_get_detained():
             )
     assert len(get_prisoners()) == 1
 
-
 def test_get_sick_leave():
     person = get_people()[0]
     create_leave(
@@ -342,11 +343,8 @@ def test_get_sick_leave():
     )
     assert len(get_sick_leave()) == 1
 
-# def test_return_to_base_from_leave():
-# def test_return_to_base_from_errand():
-
 def test_get_absent():
-    people = get_people()
+    person = get_people()[0]
 
     old_leaves = get_all_leaves()
     for i in old_leaves:
@@ -355,21 +353,44 @@ def test_get_absent():
     assert len(get_absent()) == 0
 
     create_leave(
-        military_number = people[0]['military_number'],
+        military_number = person['military_number'],
         from_date= date.today(),
         to_date= date.today() + timedelta(days= 10),
         travel_form_1= "123123123",
         travel_form_2= "123123233"
     )
 
+    assert len(get_absent()) == 0
+
     leave = get_all_leaves()[0]
+
+    update_leave(
+        leave_id= leave['leave_id'],
+        from_date= date.today() + timedelta(days= -10),
+        to_date= date.today() + timedelta(days= -1),
+        return_date= DEFAULT_RETURNING_DAY,
+        travel_form_1= "123123123",
+        travel_form_2= "123123233",
+        leave_type= LEAVE
+    )
 
     assert len(get_absent()) == 1
 
-    return_to_base(military_number= leave['military_number'], day= date.today())
+    update_leave(
+        leave_id= leave['leave_id'],
+        from_date= date.today() + timedelta(days= -10),
+        to_date= date.today() + timedelta(days= -1),
+        return_date= date.today(),
+        travel_form_1= "123123123",
+        travel_form_2= "123123233",
+        leave_type= LEAVE
+    )
 
     assert len(get_absent()) == 0
 
+# def test_return_to_base_from_leave():
+
+# def test_return_to_base_from_errand():
 
 # def test_cascade_remove_person():
     # test remove leaves, errades, support, penalty

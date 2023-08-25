@@ -1,21 +1,11 @@
 from datetime import date
-from logging import exception
 from schema.person import Person
 from schema.leave import Leave
 from schema.support import Support
 from schema.errand import Errand
 from schema.penalty import Penalty
 from schema.base_model import db
-from peewee import JOIN
-
-# constants
-PRESENT = 'present'
-LEAVE = 'leave'
-SICK = 'sick'
-ERRAND = 'errand'
-PRISON = 'prison'
-DETENTION = 'DETENTION'
-DEFAULT_RETURNING_DAY = date(year= 1900, month= 1, day= 1)
+from constants import *
 
 # person
 def create_person(
@@ -106,18 +96,6 @@ def create_leave(
         except:
             txn.rollback()
             print(f"{military_number} leave is not added")
-
-def get_leave(leave_id: int):
-    try:
-        return Leave.select().where(Leave.leave_id == leave_id).dicts()[0]
-    except:
-        return {}
-
-def get_leaves(military_number: str):
-    return Leave.select().where(Leave.military_number == military_number).dicts()[:]
-
-def get_all_leaves():
-    return Leave.select().dicts()[:]
 
 def update_leave(
         leave_id: int,
@@ -238,18 +216,6 @@ def remove_errand(errand_id: int, military_number: str):
         except:
             txn.rollback()
 
-def get_errand(errand_id: int):
-    try:
-        return Errand.select().where(Errand.errand_id == errand_id).dicts()[0]
-    except:
-        return {}
-
-def get_errands(military_number: str):
-    return Errand.select().where(Errand.military_number == military_number).dicts()[:]
-
-def get_all_errands():
-    return Errand.select().dicts()[:]
-
 def return_to_base(
         military_number: str,
         day: date
@@ -367,7 +333,6 @@ def remove_support(
             txn.rollback()
             print(f"{military_number} is not removed")
 
-
 def create_penalty(
         military_number: str,
         from_date: date,
@@ -384,7 +349,6 @@ def create_penalty(
     except:
         print(f"{military_number} penalty is not added")
     
-
 def update_penalty(
         penalty_id: int,
         from_date: date,
@@ -399,55 +363,3 @@ def update_penalty(
         penalty.save()
     except:
         print(f"penalty {penalty_id} is not updated")
-
-def get_penalty(penalty_id: int):
-    try:
-        return Penalty.select().where(Penalty.penalty_id == penalty_id).dicts()[0]
-    except:
-        return {}
-
-def get_penalties():
-    return Penalty.select().dicts()[:]
-
-def get_prisoners():
-    return Penalty.select().where(Penalty.to_date >= date.today() and Penalty.penalty_type == PRISON).dicts()[:]
-
-def get_detained():
-    return Penalty.select().where(Penalty.to_date >= date.today() and Penalty.penalty_type == DETENTION).dicts()[:]
-
-# def get_present():
-    # get all person with state = LEAVE & return_date > today
-
-def get_absent():
-    return Leave.select().where(Leave.to_date < date.today and Leave.return_date == DEFAULT_RETURNING_DAY).dicts()[:]
-
-def get_sick_leave():
-    return Leave.select().where(Leave.to_date >= date.today() and Leave.leave_type == SICK).dicts()[:]
-
-def get_support(military_number: str):
-    try:
-        return Support.select(Support, Person).join(Person).where(Person.military_number == military_number).dicts()[0]
-    except:
-        return {}
-
-def get_all_support():
-    return Support.select().dicts()[:]
-
-def get_people():
-    return Person.select().dicts()[:]
-
-def get_person(military_number: str):
-    try:
-        return Person.select().where(Person.military_number == military_number).dicts()[0]
-    except:
-        return {}
-
-# filter peaople by one or more filters
-# def filter_peaople(
-    # rank = TextField() # todo: make index with name
-    # name = CharField() 
-    # residence = CharField()
-    # brigade = CharField()
-    # demobilization_date = DateField()
-    # state = CharField() # present, absent, errand
-        # ):
