@@ -13,6 +13,16 @@ from schema.penalty import Penalty
 test_db = SqliteDatabase(':memory:')
 test_db.create_tables([Person, Leave, Errand, Penalty, Support])
 
+def remove_all_leaves():
+    old_leaves = get_all_leaves()
+    for i in old_leaves:
+        remove_leave(leave_id= i['leave_id'], military_number= i['military_number'])
+
+def remove_all_errands():
+    old_errands = get_all_errands()
+    for i in old_errands:
+        remove_errand(errand_id= i['errand_id'], military_number= i['military_number'])
+
 def test_create_person():
     for i in range(0, 5):
         create_person(
@@ -346,9 +356,7 @@ def test_get_sick_leave():
 def test_get_absent():
     person = get_people()[0]
 
-    old_leaves = get_all_leaves()
-    for i in old_leaves:
-        remove_leave(leave_id= i['leave_id'], military_number= i['military_number'])
+    remove_all_leaves()
 
     assert len(get_absent()) == 0
 
@@ -388,9 +396,43 @@ def test_get_absent():
 
     assert len(get_absent()) == 0
 
-# def test_return_to_base_from_leave():
+def test_return_to_base_from_leave():
+    remove_all_leaves()
 
-# def test_return_to_base_from_errand():
+    person = get_people()[0]
+    create_leave(
+        military_number = person['military_number'],
+        from_date= date.today() + timedelta(days= -10),
+        to_date= date.today() + timedelta(days= 1),
+        travel_form_1= "123123123",
+        travel_form_2= "123123233"
+    )
+
+    assert len(get_people_in_leave()) == 1
+
+    return_to_base(military_number= person['military_number'], day= date.today()) 
+
+    assert len(get_people_in_leave()) == 0
+    
+def test_return_to_base_from_errand():
+    remove_all_errands()
+
+    person = get_people()[0]
+    create_errand(
+        military_number = person['military_number'],
+        from_date= date.today() + timedelta(days= -10),
+        to_date= date.today() + timedelta(days= 1),
+        travel_form_1= "123123123",
+        travel_form_2= "123123233",
+        place= 'adf',
+        reason= "adsf"
+    )
+
+    assert len(get_people_in_errand()) == 1
+
+    return_to_base(military_number= person['military_number'], day= date.today()) 
+
+    assert len(get_people_in_errand()) == 0
 
 # def test_cascade_remove_person():
     # test remove leaves, errades, support, penalty

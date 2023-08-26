@@ -45,11 +45,19 @@ def get_prisoners():
 def get_detained():
     return Penalty.select().where(Penalty.to_date >= date.today(), Penalty.penalty_type == DETENTION).dicts()[:]
 
-# def get_present():
-    # get all person with state = LEAVE & return_date > today
+def get_present():
+    return Person.select().where(Person.state == PRESENT).dicts()[:]
+
+def get_people_in_leave():
+    return Person.select().where(Person.state == LEAVE, Person.return_date > date.today()).dicts()[:]
+
+def get_people_in_errand():
+    return Person.select().where(Person.state == ERRAND).dicts()[:]
 
 def get_absent():
-    return Leave.select().where(Leave.to_date < date.today(), Leave.return_date == DEFAULT_RETURNING_DAY).dicts()[:]
+    leaves = Leave.select().where(Leave.to_date < date.today(), Leave.return_date == DEFAULT_RETURNING_DAY).dicts()[:]
+    print(leaves)
+    return leaves
 
 def get_sick_leave():
     return Leave.select().where(Leave.to_date >= date.today(), Leave.leave_type == SICK).dicts()[:]

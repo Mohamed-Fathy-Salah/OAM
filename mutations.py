@@ -6,6 +6,7 @@ from schema.errand import Errand
 from schema.penalty import Penalty
 from schema.base_model import db
 from constants import *
+from peewee import fn
 
 # person
 def create_person(
@@ -91,6 +92,7 @@ def create_leave(
                     )
             person = Person.get_by_id(military_number)
             person.state= LEAVE
+            person.return_date= to_date
             person.save()
             txn.commit()
         except:
@@ -223,16 +225,13 @@ def return_to_base(
     with db.atomic() as txn:
         try:
             person = Person.get_by_id(military_number)
-
             if person.state == LEAVE:
                 person.return_date = day
-                leave = Leave.get(fn.MAX(Leave.from_date))
-                leave.return_date = day
-                leave.save()
+                leave = Leave.select(Leave.leave_id, fn.MAX(Leave.from_date)).dicts()[0]
+                Leave.update(return_date= day).where(Leave.leave_id == leave['leave_id']).execute()
             elif person.state == ERRAND:
-                errand = Errand.get(fn.MAX(Errand.from_date))
-                errand.return_date = day
-                errand.save()
+                errand = Errand.select(Errand.errand_id, fn.MAX(Errand.from_date)).dicts()[0]
+                Errand.update(return_date= day).where(Errand.errand_id == errand['errand_id']).execute()
 
             person.state = PRESENT
 
@@ -240,6 +239,7 @@ def return_to_base(
 
             txn.commit()
         except:
+            print(f"{military_number} did't return to base")
             txn.rollback()
 
 # support
